@@ -7,7 +7,7 @@ public class CameraContoroller : MonoBehaviour
     [SerializeField] private float turnSpeed = 5.0f;   // 回転速度
     [SerializeField] private float applySpeed = 0.6f;       // 振り向きの適用速度
     [SerializeField] private float maxangle = 50;
-    [SerializeField] private float minangle = 300;
+    [SerializeField] private float minangle = 320;
     [SerializeField] private Transform player = default;          // 注視対象プレイヤー
 
     [SerializeField] private float distance = 1.0f;    // 注視対象プレイヤーからカメラを離す距離
@@ -35,7 +35,7 @@ public class CameraContoroller : MonoBehaviour
       // 回転の初期化
       rotateflg = false;
       vRotation = Quaternion.Euler(10, 0, 0);         // 垂直回転(X軸を軸とする回転)は、30度見下ろす回転
-      hRotation = Quaternion.Euler(0,player.transform.localEulerAngles.y - 180,0);                // 水平回転(Y軸を軸とする回転)は、無回転
+      hRotation = Quaternion.Euler(0,player.transform.localEulerAngles.y, 0);                // 水平回転(Y軸を軸とする回転)は、無回転
       transform.rotation = hRotation * vRotation;     // 最終的なカメラの回転は、垂直回転してから水平回転する合成回転
       floorMask = LayerMask.GetMask("Field");
       gamemanager = GameObject.Find("GameManager").GetComponent<GameManager>();
@@ -71,7 +71,7 @@ public class CameraContoroller : MonoBehaviour
                    }
                    if (Input.GetKeyDown(KeyCode.R)){   // すぐに背後へ向く
                         rotateflg = true;
-                        playerangle = player.transform.localEulerAngles.y - 180;  //プレイヤーの向き
+                        playerangle = player.transform.localEulerAngles.y;  //プレイヤーの向き
                    }
                    // //Debug.Log(transform.localEulerAngles.x);
              }
@@ -139,6 +139,7 @@ public class CameraContoroller : MonoBehaviour
                    }
                    rotatespeed = 0;
                    rotatespeed_x = 0;
+                   
              }
 
              // カメラとマウスの位置を元にRayを準備
@@ -149,7 +150,7 @@ public class CameraContoroller : MonoBehaviour
 
              if (Physics.Raycast (camRay, out floorHit, camRayLength, floorMask))
              {
-                  //Debug.Log(floorHit.distance);
+                  Debug.Log(floorHit.distance);
                   //レイを可視化
                   hit_distance_now = floorHit.distance;
                   Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * floorHit.distance, Color.yellow);
@@ -159,22 +160,27 @@ public class CameraContoroller : MonoBehaviour
                   }
 
              }
-             if (distance < 10.0f && p_motion.velocity_copy.z > 0){
+             if (distance < 2.0f && p_motion.velocity_copy.z > 0){
                   distance += p_motion.velocity_copy.magnitude;
              }
 
-             // カメラの回転(transform.rotation)の更新
-             // 方法1 : 垂直回転してから水平回転する合成回転とします
-             transform.rotation = hRotation * vRotation;
 
-             // カメラの位置(transform.position)の更新
-             // player位置から距離distanceだけ手前に引いた位置を設定します(位置補正版)
-             //transform.position = player.position - transform.rotation * Vector3.forward * distance;
-             transform.position = player.position + new Vector3(0, 1.5f, 0) -
-             transform.rotation * Vector3.forward * distance;
         }
         else{
 
         }
+    }
+
+    private void FixedUpdate(){
+            // カメラの回転(transform.rotation)の更新
+            // 方法1 : 垂直回転してから水平回転する合成回転とします
+            transform.rotation = hRotation * vRotation;
+
+            // カメラの位置(transform.position)の更新
+            // player位置から距離distanceだけ手前に引いた位置を設定します(位置補正版)
+            //transform.position = player.position - transform.rotation * Vector3.forward * distance;
+            transform.position = player.position + new Vector3(0, 1.0f, 0) -
+                                 transform.rotation * Vector3.forward * distance;
+
     }
 }
